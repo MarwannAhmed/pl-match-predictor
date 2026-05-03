@@ -118,7 +118,7 @@ def join_season(season_label: str, raw_dir: Path, out_dir: Path) -> None:
 def main() -> None:
     root = Path(__file__).resolve().parents[2]
     raw_dir = root / "data" / "raw"
-    out_dir = root / "data" / "with_xG"
+    out_dir = root / "data" / "with_xg"
 
     for season in SEASONS:
         join_season(season, raw_dir, out_dir)
