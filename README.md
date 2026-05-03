@@ -20,27 +20,28 @@ Premier League match outcome predictor.
 ```
 ├── .github/
 │   └── workflows/
-│       └── ci.yml         # CI pipeline
+│       └── ci.yml               # CI pipeline
 ├── data/
 │  ├── matches
-│  │  └── raw/             # Raw match data
+│  │  └── raw/                   # Raw match data
 │  │     ├── 2015-16.csv
 │  │     ├── ...
 │  │     ├── 2024-25.csv
-│  │     └── Notes.txt     # Data key
-│  └── ELO                 # Historical ELO data
+│  │     └── Notes.txt           # Data key
+│  └── ELO                       # Historical ELO data
 │     ├── Arsenal.csv
 │     ├── ...
 │     └── Wolves.csv
 ├── src/
-│  └── data/               # Data processing scripts
-│     └── collect/         # Data collection scripts
-│        ├── collect.py    # Main data collection script
-│        ├── get_xg.py     # Script to fetch xG data
-│        └── join_elo.py   # Script to join ELO data with match data
+│  └── data/                     # Data processing scripts
+│     └── collect/               # Data collection scripts
+│        ├── collect.py          # Main data collection script
+│        ├── combine_seasons.py  # Combine all seasons into a single CSV
+│        ├── get_xg.py           # Fetch xG data
+│        └── join_elo.py         # Join ELO data with match data
 ├── .gitignore
-├── poetry.lock            # Dependency lock file
-├── pyproject.toml         # Project configuration
+├── poetry.lock                  # Dependency lock file
+├── pyproject.toml               # Project configuration
 └── README.md
 ```
 
