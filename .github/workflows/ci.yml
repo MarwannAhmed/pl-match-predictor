@@ -25,9 +25,5 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
-      - name: Collect data
-        run: poetry run python ./src/data/collect/collect.py
-
-      - name: Verify outputs
-        run: |
-          test -f "data/matches/collected.csv"
+      - name: Run tests
+        run: poetry run pytest
