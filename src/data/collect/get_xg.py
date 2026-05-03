@@ -29,15 +29,10 @@ TEAM_NAME_MAP = {
     "Man City": "Manchester City",
     "Spurs": "Tottenham",
     "Wolves": "Wolverhampton Wanderers",
-    "Sheffield United": "Sheffield Utd",
-    "Sheffield Utd": "Sheffield Utd",
+    "Sheffield Utd": "Sheffield United",
     "Nott'm Forest": "Nottingham Forest",
     "Newcastle": "Newcastle United",
-    "Brighton": "Brighton",
-    "Leeds": "Leeds",
-    "Leicester": "Leicester",
     "West Brom": "West Bromwich Albion",
-    "West Bromwich": "West Bromwich Albion",
 }
 
 
