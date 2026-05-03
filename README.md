@@ -9,10 +9,13 @@ Premier League match outcome predictor.
 
 ## Getting Started
 
-1. Install dependencies:
+1. Clone the repository:
+   - `git clone https://github.com/MarwannAhmed/pl-match-predictor.git`
+
+2. Install dependencies:
    - `poetry install --no-root`
 
-2. Collect data:
+3. Collect data:
    - `poetry run python src/data/collect/collect.py`
 
 ## Structure
