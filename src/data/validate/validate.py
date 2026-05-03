@@ -8,8 +8,7 @@ import check_teams as check_teams
 import check_results as check_results
 import check_stats as check_stats
 
-if __name__ == "__main__":
-    df = pd.read_csv("data/matches/collected.csv")
+def main(df: pd.DataFrame) -> None:
     check_types.main(df)
     check_missing.main(df)
     check_duplicates.main(df)
@@ -18,3 +17,7 @@ if __name__ == "__main__":
     check_teams.main(df)
     check_results.main(df)
     check_stats.main(df)
+
+if __name__ == "__main__":
+    df = pd.read_csv("data/matches/collected.csv")
+    main(df)
