@@ -15,9 +15,20 @@ def check_shots(df: pd.DataFrame) -> None:
         print(f"Found {len(invalid_rows)} rows with inconsistent shot counts:")
         print(invalid_rows[["Season", "Date", "HomeTeam", "AwayTeam", "HS", "AS", "HST", "AST"]])
 
+def check_odds(df: pd.DataFrame) -> None:
+    # Check that the implied probabilities from the odds sum to 1 (within a reasonable tolerance)
+    raw_odds = 1 / df[["B365H", "B365D", "B365A"]]
+    overround = raw_odds.sum(axis=1)
+    implied_probabilities = raw_odds.div(overround, axis=0)
+    invalid_rows = implied_probabilities[(implied_probabilities.sum(axis=1) - 1).abs() > 0.01]
+    if not invalid_rows.empty:
+        print(f"Found {len(invalid_rows)} rows with inconsistent odds:")
+        print(invalid_rows[["Season", "Date", "HomeTeam", "AwayTeam", "B365H", "B365D", "B365A"]])
+
 def main(df: pd.DataFrame) -> None:
     check_stats(df)
     check_shots(df)
+    check_odds(df)
     print("Stats validation completed.")
 
 if __name__ == "__main__":
