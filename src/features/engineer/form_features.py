@@ -32,6 +32,7 @@ def _build_team_rows(season_df: pd.DataFrame, is_home: bool) -> pd.DataFrame:
         {
             "match_id": season_df["_match_id"],
             "Date": season_df["Date"],
+            "_date": season_df["_date"],
             "team": season_df[team_col],
             "is_home": is_home,
             "points": points,
@@ -52,7 +53,8 @@ def _build_team_rows(season_df: pd.DataFrame, is_home: bool) -> pd.DataFrame:
 def _rolling_means(
     long_df: pd.DataFrame, group_cols: list[str], metric_cols: list[str]
 ) -> pd.DataFrame:
-    ordered = long_df.sort_values(["Date", "match_id"])
+    sort_col = "_date" if "_date" in long_df.columns else "Date"
+    ordered = long_df.sort_values([sort_col, "match_id"])
     rolled = (
         ordered.groupby(group_cols, sort=False)[metric_cols]
         .apply(lambda group: group.shift(1).rolling(5, min_periods=1).mean())
@@ -62,7 +64,9 @@ def _rolling_means(
 
 
 def compute_season_form(season_df: pd.DataFrame) -> pd.DataFrame:
-    season_df = season_df.sort_values("Date").reset_index().rename(columns={"index": "_orig_index"})
+    season_df = season_df.copy()
+    season_df["_date"] = pd.to_datetime(season_df["Date"], dayfirst=True, errors="coerce")
+    season_df = season_df.sort_values("_date").reset_index().rename(columns={"index": "_orig_index"})
     season_df["_match_id"] = season_df.index
 
     home_rows = _build_team_rows(season_df, True)
@@ -76,8 +80,8 @@ def compute_season_form(season_df: pd.DataFrame) -> pd.DataFrame:
     season_df["A_PTS_UP"] = 0
     season_df["A_PTS_DOWN"] = 0
     teams = pd.unique(pd.concat([season_df["HomeTeam"], season_df["AwayTeam"]], ignore_index=True))
-    for match_date in season_df["Date"].drop_duplicates().sort_values():
-        prior_matches = long_df[long_df["Date"] < match_date]
+    for match_date in season_df["_date"].drop_duplicates().sort_values():
+        prior_matches = long_df[long_df["_date"] < match_date]
         standings = (
             prior_matches.groupby("team")[["points", "goals_for", "goals_against"]]
             .sum()
@@ -104,7 +108,7 @@ def compute_season_form(season_df: pd.DataFrame) -> pd.DataFrame:
         pos_map = standings.set_index("team")["pos"].to_dict()
         pts_up_map = standings.set_index("team")["pts_up"].to_dict()
         pts_down_map = standings.set_index("team")["pts_down"].to_dict()
-        date_mask = season_df["Date"] == match_date
+        date_mask = season_df["_date"] == match_date
         season_df.loc[date_mask, "H_POS"] = season_df.loc[date_mask, "HomeTeam"].map(pos_map)
         season_df.loc[date_mask, "A_POS"] = season_df.loc[date_mask, "AwayTeam"].map(pos_map)
         season_df.loc[date_mask, "H_PTS_UP"] = season_df.loc[date_mask, "HomeTeam"].map(pts_up_map)
@@ -127,7 +131,7 @@ def compute_season_form(season_df: pd.DataFrame) -> pd.DataFrame:
     overall_roll = _rolling_means(long_df, ["team"], metric_cols)
     venue_roll = _rolling_means(long_df, ["team", "is_home"], metric_cols)
 
-    ordered_long = long_df.sort_values(["Date", "match_id"]).copy()
+    ordered_long = long_df.sort_values(["_date", "match_id"]).copy()
     overall_roll.columns = [f"overall_{col}" for col in metric_cols]
     venue_roll.columns = [f"venue_{col}" for col in metric_cols]
     ordered_long = ordered_long.join(overall_roll)
@@ -157,7 +161,7 @@ def compute_season_form(season_df: pd.DataFrame) -> pd.DataFrame:
 
     season_df = season_df.reset_index(drop=True)
     season_df = season_df.set_index("_orig_index").sort_index()
-    return season_df.drop(columns=["_match_id"], errors="ignore")
+    return season_df.drop(columns=["_match_id", "_date"], errors="ignore")
 
 def compute_form(df: pd.DataFrame) -> pd.DataFrame:
 
