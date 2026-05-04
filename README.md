@@ -21,6 +21,9 @@ Premier League match outcome predictor.
 4. Validate data:
    - `poetry run python src/data/collect/validate.py`
 
+5. Engineer features:
+   - `poetry run python src/features/engineer/engineer.py`
+
 ## Structure
 
 ```
@@ -32,9 +35,11 @@ Premier League match outcome predictor.
 │  │  └── raw/                   # Raw match data
 │  └── ELO                       # Historical ELO data
 ├── src/
-│  └── data/                     # Data processing scripts
-│     ├── collect/               # Data collection scripts
-│     └── validate/              # Data validation scripts
+│  ├── data/                     # Data processing scripts
+│  │  ├── collect/               # Data collection scripts
+│  │  └── validate/              # Data validation scripts
+│  └── features/                 # Feature processing scripts
+│     └── engineer/              # Feature engineering scripts
 ├── .gitignore
 ├── poetry.lock                  # Dependency lock file
 ├── pyproject.toml               # Project configuration
