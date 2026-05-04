@@ -24,6 +24,9 @@ Premier League match outcome predictor.
 5. Engineer features:
    - `poetry run python src/features/engineer/engineer.py`
 
+5. Preprocess features:
+   - `poetry run python src/features/preprocess/preprocess.py`
+
 ## Structure
 
 ```

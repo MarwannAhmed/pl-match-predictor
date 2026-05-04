@@ -1,8 +1,10 @@
 import pandas as pd
-import drop_leakage as drop_leakage
+import drop_unwanted as drop_unwanted
+import encode as encode
 
 def main(df: pd.DataFrame) -> pd.DataFrame:
-    df = drop_leakage.drop_leakage_features(df)
+    df = drop_unwanted.main(df)
+    df = encode.main(df)
     return df
 
 if __name__ == "__main__":
