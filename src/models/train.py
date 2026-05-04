@@ -2,10 +2,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import hashlib
+import os
+from numbers import Real
+import platform
+import subprocess
+import tomllib
 from pathlib import Path
 
+import mlflow
+import mlflow.sklearn
 import numpy as np
 import pandas as pd
+import sklearn
 
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.impute import SimpleImputer
@@ -28,6 +37,12 @@ FEATURES_LINEAR_PATH = Path("data/matches/features_linear.csv")
 FEATURES_TREES_PATH = Path("data/matches/features_trees.csv")
 RANDOM_STATE = 42
 RESULTS_DIR = Path("results")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+MLFLOW_EXPERIMENT_NAME = "pl-match-predictor"
+MLFLOW_TRACKING_URI = os.environ.get(
+    "MLFLOW_TRACKING_URI",
+    f"sqlite:///{(PROJECT_ROOT / 'mlflow.db').resolve().as_posix()}",
+)
 
 
 @dataclass
@@ -37,6 +52,85 @@ class ModelSpec:
     feature_set: str
     scale: bool
     param_grid: list[dict[str, object]]
+
+
+def _read_project_version() -> str:
+    pyproject_path = PROJECT_ROOT / "pyproject.toml"
+    if not pyproject_path.exists():
+        return "unknown"
+
+    with pyproject_path.open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    return str(pyproject.get("project", {}).get("version", "unknown"))
+
+
+def _get_git_commit() -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=PROJECT_ROOT,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+    return completed.stdout.strip() or "unknown"
+
+
+def _hash_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _log_run_versions(feature_paths: dict[str, Path]) -> None:
+    tags = {
+        "project_version": _read_project_version(),
+        "git_commit": _get_git_commit(),
+        "python_version": platform.python_version(),
+        "mlflow_version": mlflow.__version__,
+        "numpy_version": np.__version__,
+        "pandas_version": pd.__version__,
+        "scikit_learn_version": sklearn.__version__,
+        "train_data_sha256": _hash_file(TRAIN_PATH),
+        "test_data_sha256": _hash_file(TEST_PATH),
+    }
+    for label, path in feature_paths.items():
+        tags[f"{label}_sha256"] = _hash_file(path)
+    mlflow.set_tags(tags)
+
+
+def _log_model_run(
+    spec: ModelSpec,
+    pipeline: Pipeline,
+    feature_path: Path,
+    output_dir: Path,
+    metrics: dict[str, float],
+    best_params: dict[str, object],
+    val_metrics: dict[str, float],
+) -> None:
+    mlflow.log_params(
+        {
+            "model_name": spec.name,
+            "feature_set": spec.feature_set,
+            "uses_scaling": spec.scale,
+            **{key: value for key, value in best_params.items()},
+        }
+    )
+    mlflow.log_metrics(
+        {
+            key: float(value)
+            for key, value in {**metrics, **val_metrics}.items()
+            if key != "model" and isinstance(value, Real)
+        }
+    )
+    mlflow.log_artifact(str(feature_path), artifact_path="inputs")
+    mlflow.log_artifacts(str(output_dir), artifact_path="evaluation")
+    mlflow.sklearn.log_model(pipeline, artifact_path="model")
 
 
 def load_features(feature_path: Path, target: str) -> list[str]:
@@ -73,8 +167,10 @@ def evaluate_model(
     output_dir: Path,
 ) -> dict[str, float]:
     pipeline.fit(X_train, y_train)
+    train_preds = pipeline.predict(X_train)
     preds = pipeline.predict(X_test)
 
+    train_accuracy = accuracy_score(y_train, train_preds)
     accuracy = accuracy_score(y_test, preds)
     macro_f1 = f1_score(y_test, preds, average="macro")
     precision, recall, _, _ = precision_recall_fscore_support(
@@ -91,6 +187,7 @@ def evaluate_model(
 
     return {
         "model": name,
+        "train_accuracy": train_accuracy,
         "accuracy": accuracy,
         "macro_f1": macro_f1,
         "macro_precision": precision,
@@ -252,6 +349,8 @@ def main() -> None:
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
     linear_features = load_features(FEATURES_LINEAR_PATH, TARGET)
     tree_features = load_features(FEATURES_TREES_PATH, TARGET)
 
@@ -271,50 +370,76 @@ def main() -> None:
     class_weights = dict(zip(classes, weights))
 
     results: list[dict[str, float]] = []
-    for spec in build_models(class_weights):
-        if spec.feature_set == "linear":
-            X_tr, X_val = X_train_linear_split, X_val_linear
-            X_te = X_test_linear
-        else:
-            X_tr, X_val = X_train_tree_split, X_val_tree
-            X_te = X_test_tree
 
-        tuned_pipeline, best_params, val_metrics = tune_model(
-            spec,
-            X_tr,
-            y_train_split,
-            X_val,
-            y_val,
+    mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
+    with mlflow.start_run(run_name="training"):
+        _log_run_versions(
+            {
+                "linear_feature_set": FEATURES_LINEAR_PATH,
+                "tree_feature_set": FEATURES_TREES_PATH,
+            }
         )
 
-        tuned_pipeline.fit(
-            pd.concat([X_tr, X_val], axis=0),
-            np.concatenate([y_train_split, y_val]),
-        )
-        model_dir = RESULTS_DIR / spec.name
-        metrics = evaluate_model(
-            spec.name,
-            tuned_pipeline,
-            pd.concat([X_tr, X_val], axis=0),
-            np.concatenate([y_train_split, y_val]),
-            X_te,
-            y_test,
-            model_dir,
-        )
-        metrics.update(val_metrics)
-        metrics["best_params"] = best_params
-        write_model_summary(model_dir, metrics, best_params)
-        results.append(metrics)
-        print(
-            f"{spec.name}: accuracy={metrics['accuracy']:.4f} "
-            f"macro_f1={metrics['macro_f1']:.4f} "
-            f"macro_precision={metrics['macro_precision']:.4f} "
-            f"macro_recall={metrics['macro_recall']:.4f}"
-        )
+        for spec in build_models(class_weights):
+            if spec.feature_set == "linear":
+                X_tr, X_val = X_train_linear_split, X_val_linear
+                X_te = X_test_linear
+                feature_path = FEATURES_LINEAR_PATH
+            else:
+                X_tr, X_val = X_train_tree_split, X_val_tree
+                X_te = X_test_tree
+                feature_path = FEATURES_TREES_PATH
+
+            tuned_pipeline, best_params, val_metrics = tune_model(
+                spec,
+                X_tr,
+                y_train_split,
+                X_val,
+                y_val,
+            )
+
+            tuned_pipeline.fit(
+                pd.concat([X_tr, X_val], axis=0),
+                np.concatenate([y_train_split, y_val]),
+            )
+            model_dir = RESULTS_DIR / spec.name
+            metrics = evaluate_model(
+                spec.name,
+                tuned_pipeline,
+                pd.concat([X_tr, X_val], axis=0),
+                np.concatenate([y_train_split, y_val]),
+                X_te,
+                y_test,
+                model_dir,
+            )
+            metrics.update(val_metrics)
+            metrics["best_params"] = best_params
+            write_model_summary(model_dir, metrics, best_params)
+
+            with mlflow.start_run(run_name=spec.name, nested=True):
+                _log_run_versions({"feature_set": feature_path})
+                _log_model_run(
+                    spec,
+                    tuned_pipeline,
+                    feature_path,
+                    model_dir,
+                    metrics,
+                    best_params,
+                    val_metrics,
+                )
+
+            results.append(metrics)
+            print(
+                f"{spec.name}: accuracy={metrics['accuracy']:.4f} "
+                f"macro_f1={metrics['macro_f1']:.4f} "
+                f"macro_precision={metrics['macro_precision']:.4f} "
+                f"macro_recall={metrics['macro_recall']:.4f}"
+            )
 
     results_df = pd.DataFrame(results).sort_values("macro_f1", ascending=False)
     results_path = RESULTS_DIR / "model_results.csv"
     results_df.to_csv(results_path, index=False)
+    mlflow.log_artifact(str(results_path), artifact_path="summary")
     print(f"\nSaved model results to {results_path}")
 
 

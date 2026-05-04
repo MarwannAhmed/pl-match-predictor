@@ -9,7 +9,7 @@ def check_season_length(df: pd.DataFrame) -> None:
 
 def check_season_teams(df: pd.DataFrame) -> None:
     # Check that each season has the expected number of unique teams (20)
-    season_teams = df.groupby("Season").apply(lambda x: set(x["HomeTeam"]).union(set(x["AwayTeam"])))
+    season_teams = df.groupby("Season").apply(lambda x: set(x["HomeTeam"]).union(set(x["AwayTeam"])), include_groups=False)
     for season, teams in season_teams.items():
         if len(teams) != 20:
             print(f"Season '{season}' has {len(teams)} unique teams, expected 20.")
