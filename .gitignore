@@ -46,10 +46,10 @@ data/matches/features_trees.csv
 data/matches/features_linear.csv
 
 # Auxilary dataset
-aux/data
+auxiliary/data
 
 # Auxiliary cleaning results
-aux/cleaned
+auxiliary/cleaned
 
 # Model results
 results/
