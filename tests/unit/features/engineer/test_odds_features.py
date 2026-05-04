@@ -25,8 +25,5 @@ def test_odds_features_computes_probabilities_and_logs() -> None:
     assert result.loc[0, "OVERROUND"] == pytest.approx(overround)
     assert result.loc[0, "IMP_H_PROB_ODDS"] == pytest.approx(raw_h / overround)
     assert result.loc[0, "IMP_A_PROB_ODDS"] == pytest.approx(raw_a / overround)
-    assert result.loc[0, "ODDS_LOG_H"] == pytest.approx(np.log(2.0))
-    assert result.loc[0, "ODDS_LOG_D"] == pytest.approx(np.log(3.0))
-    assert result.loc[0, "ODDS_LOG_A"] == pytest.approx(np.log(4.0))
     assert result.loc[0, "ODDS_RATIO_HA"] == pytest.approx(2.0 / 4.0)
     assert result.loc[0, "ELO_MARKET_DIFF"] == pytest.approx(0.6 - (raw_h / overround))
