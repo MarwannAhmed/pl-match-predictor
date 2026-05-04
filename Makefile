@@ -30,3 +30,9 @@ select:
 
 train:
 	poetry run python src/models/train.py
+
+coverage:
+	poetry run pytest --cov=src --cov-report=xml
+
+mlflow-ui:
+	poetry run mlflow ui
