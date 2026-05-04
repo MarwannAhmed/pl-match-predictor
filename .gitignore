@@ -40,4 +40,5 @@ data/matches/with_xg/
 data/matches/with_xg_and_elo/
 data/matches/collected.csv
 data/matches/engineered_features.csv
-data/matches/preprocessed_features.csv
+data/matches/preprocessed_train.csv
+data/matches/preprocessed_test.csv
