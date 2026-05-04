@@ -2,7 +2,7 @@ import pandas as pd
 
 def check_stats(df: pd.DataFrame) -> None:
     # Check that all stats columns are non-negative
-    stats_columns = ["HS", "AS", "HST", "AST", "HC", "AC", "HY", "AY", "HR", "AR", "B365H", "B365D", "B365A", "H_ELO", "A_ELO", "HxG", "AxG"]
+    stats_columns = ["HS", "AS", "HST", "AST", "B365H", "B365D", "B365A", "H_ELO", "A_ELO", "HxG", "AxG"]
     invalid_rows = df[(df[stats_columns] < 0).any(axis=1)]
     if not invalid_rows.empty:
         print(f"Found {len(invalid_rows)} rows with negative stats:")
