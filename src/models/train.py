@@ -15,6 +15,7 @@ from sklearn.model_selection import TimeSeriesSplit
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.dummy import DummyClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.utils.class_weight import compute_class_weight
@@ -112,6 +113,15 @@ def write_model_summary(
 
 def build_models(class_weights: dict[int, float]) -> list[ModelSpec]:
     return [
+        ModelSpec(
+            name="home_win_baseline",
+            estimator=DummyClassifier(strategy="constant", constant=2),
+            feature_set="linear",
+            scale=False,
+            param_grid=[
+                {},
+            ],
+        ),
         ModelSpec(
             name="logistic_regression",
             estimator=LogisticRegression(
