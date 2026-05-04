@@ -29,7 +29,6 @@ def test_drop_unwanted_removes_leakage_columns() -> None:
     for col in [
         "ID",
         "Season",
-        "FTR",
         "FTHG",
         "FTAG",
         "HS",

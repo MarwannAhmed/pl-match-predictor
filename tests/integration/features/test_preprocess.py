@@ -1,35 +1,44 @@
 import pandas as pd
+import pytest
 
 import preprocess
 
 
 def test_preprocess_pipeline_drops_and_encodes() -> None:
-    df = pd.DataFrame(
-        {
-            "ID": [1],
-            "Season": ["2024-25"],
-            "Date": ["10/08/2024"],
-            "HomeTeam": ["TeamA"],
-            "AwayTeam": ["TeamB"],
-            "FTR": ["H"],
-            "FTHG": [2],
-            "FTAG": [1],
-            "HS": [10],
-            "AS": [8],
-            "HST": [5],
-            "AST": [3],
-            "HxG": [1.2],
-            "AxG": [0.9],
-            "ELO_DIFF": [50.0],
-        }
-    )
+    rows = []
+    for idx in range(9):
+        season_start = 2015 + idx
+        season_label = f"{season_start}-{str(season_start + 1)[-2:]}"
+        rows.append(
+            {
+                "ID": idx + 1,
+                "Season": season_label,
+                "Date": "10/08/2024",
+                "HomeTeam": f"Team{idx}",
+                "AwayTeam": f"Team{idx + 1}",
+                "FTR": "H",
+                "FTHG": 2,
+                "FTAG": 1,
+                "HS": 10,
+                "AS": 8,
+                "HST": 5,
+                "AST": 3,
+                "HxG": 1.2,
+                "AxG": 0.9,
+                "ELO_DIFF": float(idx + 1),
+            }
+        )
 
-    result = preprocess.main(df.copy())
+    df = pd.DataFrame(rows)
+
+    train_df, test_df = preprocess.main(df.copy())
+
+    assert len(train_df) == 8
+    assert len(test_df) == 1
 
     for col in [
         "ID",
         "Season",
-        "FTR",
         "FTHG",
         "FTAG",
         "HS",
@@ -40,7 +49,19 @@ def test_preprocess_pipeline_drops_and_encodes() -> None:
         "AxG",
         "Date",
     ]:
-        assert col not in result.columns
+        assert col not in train_df.columns
+        assert col not in test_df.columns
 
-    for col in ["Day", "Month", "DayOfWeek", "HomeTeam", "AwayTeam", "ELO_DIFF"]:
-        assert col in result.columns
+    for col in [
+        "Day",
+        "Month",
+        "DayOfWeek",
+        "HomeTeam",
+        "AwayTeam",
+        "ELO_DIFF",
+        "FTR",
+    ]:
+        assert col in train_df.columns
+        assert col in test_df.columns
+
+    assert train_df["ELO_DIFF"].mean() == pytest.approx(0.0, abs=1e-7)
