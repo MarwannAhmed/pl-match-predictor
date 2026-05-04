@@ -17,4 +17,4 @@ def main(df: pd.DataFrame) -> pd.DataFrame:
 if __name__ == "__main__":
     df = pd.read_csv("data/matches/collected.csv")
     df = main(df)
-    df.to_csv("data/matches/engineered_features.csv", index=False)
+    df.to_csv("data/matches/xg_features.csv", index=False)
