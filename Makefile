@@ -36,3 +36,6 @@ coverage:
 
 mlflow-ui:
 	poetry run mlflow ui
+
+dashboard:
+	poetry run streamlit run src/dashboard.py

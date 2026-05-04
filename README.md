@@ -19,8 +19,17 @@ This is the source code for a Premier League match outcome predictor that classi
 3. Run tests:
    - make test
 
-4. Run the pipeline:
+4. Get tests coverage report:
+   - make coverage
+
+5. Run the pipeline:
    - make pipeline
+
+6. Run mlflow UI:
+   - make mlflow-ui
+
+7. Run the Interactive Dashboard:
+   - make dashboard
 
 ## Structure
 
@@ -42,6 +51,7 @@ This is the source code for a Premier League match outcome predictor that classi
 │  │  ├── select/                # Feature selection scripts
 │  │  └── visualize/             # Feature visualization scripts
 │  ├── models/                   # Model training and evaluation scripts
+|  ├── dashboard.py              # EDA findings and business insights in streamlit app
 │  └── pipeline.py               # End-to-end pipeline runner
 ├── tests/
 │  ├── integration/              # Integration tests
