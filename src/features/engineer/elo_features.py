@@ -8,9 +8,6 @@ def main(df: pd.DataFrame) -> pd.DataFrame:
 
     home_advantage = 65
     df["H_PROB_ELO"] = 1 / (1 + 10 ** (-( df['ELO_DIFF'] + home_advantage) / 400))
-
-    df["ELO_RATIO"] = df["H_ELO"] / df["A_ELO"]
-
     print("ELO features engineered successfully.")
     
     return df
