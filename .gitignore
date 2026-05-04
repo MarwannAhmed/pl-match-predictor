@@ -42,4 +42,8 @@ data/matches/collected.csv
 data/matches/engineered_features.csv
 data/matches/preprocessed_train.csv
 data/matches/preprocessed_test.csv
-data/matches/visualizations.pdf
+data/matches/features_trees.csv
+data/matches/features_linear.csv
+
+# Model results
+results/

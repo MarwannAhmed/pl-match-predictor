@@ -211,7 +211,7 @@ def plot_pca_projection(
 
 def main(
     df: pd.DataFrame,
-    output_path: str | Path = "data/matches/visualizations.pdf",
+    output_path: str | Path = "results/visualizations/visualizations.pdf",
 ) -> Path:
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)

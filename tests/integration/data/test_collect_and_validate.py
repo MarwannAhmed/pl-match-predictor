@@ -90,9 +90,7 @@ def test_collect_and_validate_pipeline(tmp_path, monkeypatch, capsys) -> None:
 
     monkeypatch.chdir(tmp_path)
 
-    collect.get_xg.main()
-    collect.join_elo.main()
-    collect.combine_seasons.main()
+    collect.main()
 
     collected_path = tmp_path / "data" / "matches" / "collected.csv"
     assert collected_path.exists()

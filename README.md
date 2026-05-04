@@ -15,17 +15,8 @@ Premier League match outcome predictor.
 2. Install dependencies:
    - `poetry install --no-root`
 
-3. Collect data:
-   - `poetry run python src/data/collect/collect.py`
-
-4. Validate data:
-   - `poetry run python src/data/collect/validate.py`
-
-5. Engineer features:
-   - `poetry run python src/features/engineer/engineer.py`
-
-5. Preprocess features:
-   - `poetry run python src/features/preprocess/preprocess.py`
+3. Run the pipeline:
+   - `poetry run python src/pipeline.py`
 
 ## Structure
 
@@ -41,15 +32,28 @@ Premier League match outcome predictor.
 │  ├── data/                     # Data processing scripts
 │  │  ├── collect/               # Data collection scripts
 │  │  └── validate/              # Data validation scripts
-│  └── features/                 # Feature processing scripts
-│     ├── engineer/              # Feature engineering scripts
-│     ├── preprocess/            # Feature preprocessing scripts
-│     └── visualize/             # Feature visualization scripts
+│  ├── features/                 # Feature processing scripts
+│  │  ├── engineer/              # Feature engineering scripts
+│  │  ├── preprocess/            # Feature preprocessing scripts
+│  │  ├── select/0               # Feature selection scripts
+│  │  └── visualize/             # Feature visualization scripts
+│  ├── models/                   # Model training and evaluation scripts
+│  └── pipeline.py               # End-to-end pipeline runner
+├── tests/
+│  ├── integration/              # Integration tests
+│  └── unit/                     # Unit tests
 ├── .gitignore
 ├── poetry.lock                  # Dependency lock file
 ├── pyproject.toml               # Project configuration
 └── README.md
 ```
+
+## Results
+
+- Model outputs are saved under `results/<model>/` (metrics and confusion matrices).
+- Summary metrics are saved in `results/model_results.csv`.
+- Feature selection artifacts are saved in `results/feature_selection/`.
+- Visualizations are saved in `results/visualizations/`.
 
 ## Contributing
 
