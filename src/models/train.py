@@ -73,8 +73,10 @@ def evaluate_model(
     output_dir: Path,
 ) -> dict[str, float]:
     pipeline.fit(X_train, y_train)
+    train_preds = pipeline.predict(X_train)
     preds = pipeline.predict(X_test)
 
+    train_accuracy = accuracy_score(y_train, train_preds)
     accuracy = accuracy_score(y_test, preds)
     macro_f1 = f1_score(y_test, preds, average="macro")
     precision, recall, _, _ = precision_recall_fscore_support(
@@ -91,6 +93,7 @@ def evaluate_model(
 
     return {
         "model": name,
+        "train_accuracy": train_accuracy,
         "accuracy": accuracy,
         "macro_f1": macro_f1,
         "macro_precision": precision,
