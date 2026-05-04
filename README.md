@@ -35,7 +35,7 @@ Premier League match outcome predictor.
 │  ├── features/                 # Feature processing scripts
 │  │  ├── engineer/              # Feature engineering scripts
 │  │  ├── preprocess/            # Feature preprocessing scripts
-│  │  ├── select/0               # Feature selection scripts
+│  │  ├── select/                # Feature selection scripts
 │  │  └── visualize/             # Feature visualization scripts
 │  ├── models/                   # Model training and evaluation scripts
 │  └── pipeline.py               # End-to-end pipeline runner
