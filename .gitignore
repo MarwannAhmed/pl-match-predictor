@@ -45,6 +45,12 @@ data/matches/preprocessed_test.csv
 data/matches/features_trees.csv
 data/matches/features_linear.csv
 
+# Auxilary dataset
+auxiliary/data
+
+# Auxiliary cleaning results
+auxiliary/cleaned
+
 # Model results
 results/
 
