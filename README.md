@@ -5,7 +5,7 @@ Premier League match outcome predictor.
 ## Prerequisites
 
 - Poetry
-- Python 3.13
+- Python 3.12
 
 ## Getting Started
 

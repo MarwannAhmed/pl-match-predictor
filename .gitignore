@@ -47,3 +47,7 @@ data/matches/features_linear.csv
 
 # Model results
 results/
+
+# MLflow
+mlruns/
+mlflow.db
