@@ -42,7 +42,9 @@ Premier League match outcome predictor.
 │  │  ├── collect/               # Data collection scripts
 │  │  └── validate/              # Data validation scripts
 │  └── features/                 # Feature processing scripts
-│     └── engineer/              # Feature engineering scripts
+│     ├── engineer/              # Feature engineering scripts
+│     ├── preprocess/            # Feature preprocessing scripts
+│     └── visualize/             # Feature visualization scripts
 ├── .gitignore
 ├── poetry.lock                  # Dependency lock file
 ├── pyproject.toml               # Project configuration
