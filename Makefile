@@ -39,3 +39,6 @@ mlflow-ui:
 
 dashboard:
 	poetry run streamlit run src/dashboard.py
+
+ui:
+	mlflow-ui dashboard
